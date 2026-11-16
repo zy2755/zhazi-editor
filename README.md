@@ -97,7 +97,7 @@ zip 回写（其余条目字节一致、输出 XML 可被标准解析器解析�
 
 本仓库已满足两家渠道的基础要求：依赖全部来自 Maven Central / Google 的开源库（无 GMS、无闭源 SDK）、带 gradle wrapper、源码即构建脚本、release 有 git tag（`v0.1.0`）。
 
-- **IzzyOnDroid（快，推荐先走这条）**：它直接跟踪 GitHub Releases 里的 APK。到 [IzzyOnDroid 仓库](https://gitlab.com/IzzyOnDroid/repo/-/blob/master/README.md#how-do-i-get-my-app-included) 按模板提 issue 申请收录即可，通常几天内有回复。
+- **IzzyOnDroid（快，推荐先走这条）**：它直接跟踪 GitHub Releases 里的 APK。提交入口已迁移至 Codeberg：到 [IzzyOnDroid/repodata issues](https://codeberg.org/IzzyOnDroid/repodata/issues) 按模板提收录申请（旧的 GitLab 仓库已停用）。本仓库自查已满足其 [收录政策](https://izzyondroid.org/docs/general/AppInclusionPolicy)：FOSS 许可 ✓、fastlane 元数据齐全 ✓、release 有 git tag 且与 versionName/versionCode 一致 ✓、APK 6.5MB（上限 30MB）✓、开发者自签名 ✓。
 - **官方 F-Droid（慢，周期以月计）**：到 [F-Droid monitor](https://monitor.f-droid.org/) 提交打包请求（Request packaging），志愿者会基于 git tag 用官方 CI 从源码构建。仓库内的 [fastlane/metadata](fastlane/metadata/android/com.zhazi.editor/)（标题、双语描述、更新日志、512px 图标）就是为 F-Droid 的 fastlane 三件套准备的，收录后商店文案与图会直接取用。
 
 注意：官方 F-Droid 从源码构建时不会用你的签名 keystore，而是 F-Droid 自己重签——与 GitHub Releases 的 APK 签名不同，两者不能互相覆盖安装，属正常现象。
