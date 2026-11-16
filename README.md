@@ -122,4 +122,5 @@ adb shell am start -n com.zhazi.editor/.MainActivity --es debug_path t.docx
 
 ## License
 
-MIT OR Apache-2.0
+双许可，任选其一：[MIT](LICENSE-MIT) 或 [Apache-2.0](LICENSE-APACHE)。
+Dual-licensed under your choice of the [MIT](LICENSE-MIT) or [Apache-2.0](LICENSE-APACHE) license.
