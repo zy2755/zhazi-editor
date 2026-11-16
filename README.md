@@ -40,7 +40,7 @@
 
 ## 构建要求
 
-JDK 17 + Android SDK（platform 35）。`./gradlew assembleDebug`；release 签名信息放 `local.properties`（见 [构建章节](#从源码构建)），未配置时也能构建（不签名的 release 包）。
+JDK 17 + Android SDK（platform 35）。Debug/Release 构建、签名配置、单元测试与常见问题见 **[BUILDING.md](BUILDING.md)**。
 
 ## 设计要点（给想改代码的你）
 
@@ -77,21 +77,7 @@ zip 回写（其余条目字节一致、输出 XML 可被标准解析器解析�
 
 ## 从源码构建 Release
 
-1. 生成签名密钥（放在仓库外，**务必备份**，更新包必须同签名）：
-   ```bash
-   keytool -genkeypair -keystore ~/.android/zhazi-release.jks -alias zhazi \
-     -keyalg RSA -keysize 2048 -validity 10950
-   ```
-2. 在项目根目录 `local.properties`（已 gitignore）写：
-   ```properties
-   zhazi.storeFile=C:/Users/hou33/.android/zhazi-release.jks
-   zhazi.storePassword=你的密码
-   zhazi.keyAlias=zhazi
-   zhazi.keyPassword=你的密码
-   ```
-3. `./gradlew assembleRelease` → `app/build/outputs/apk/release/app-release.apk`
-
-不配置时 `assembleRelease` 产出未签名包，不影响他人克隆构建。
+签名密钥生成、`local.properties` 配置、构建与签名验证的完整步骤见 **[BUILDING.md](BUILDING.md)** 第 6 节。注意：签名密钥放在仓库外并**务必备份**，更新包必须同签名。
 
 ## F-Droid / IzzyOnDroid 上架
 
