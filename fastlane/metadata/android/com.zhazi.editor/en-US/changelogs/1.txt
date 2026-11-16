@@ -1,0 +1,2 @@
+首个公开版本：中文分词炸字、点选格式化（字体/字号/颜色/加粗/斜体）、格式刷、拆分合并词块、50 步撤销、外科手术式保存。
+First public release: word-chip editing for docx, quick formatting toolbar, format painter, split/merge chips, 50-step undo, surgical OOXML save.

@@ -1,8 +1,17 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
+
+// 签名信息放在 local.properties（gitignored），仓库克隆后未配置时 release 不签名
+val signingProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+val hasReleaseSigning = signingProps.getProperty("zhazi.storeFile") != null
 
 android {
     namespace = "com.zhazi.editor"
@@ -16,9 +25,23 @@ android {
         versionName = "0.1.0"
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = rootProject.file(signingProps.getProperty("zhazi.storeFile"))
+                storePassword = signingProps.getProperty("zhazi.storePassword")
+                keyAlias = signingProps.getProperty("zhazi.keyAlias")
+                keyPassword = signingProps.getProperty("zhazi.keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 
