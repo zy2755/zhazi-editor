@@ -59,7 +59,7 @@ import com.zhazi.editor.docx.FontPatch
 import com.zhazi.editor.docx.RprOps
 import com.zhazi.editor.docx.RunFmt
 import com.zhazi.editor.docx.Segmenter
-import com.zhazi.editor.ui.FormatBar
+import com.zhazi.editor.ui.FormatSheet
 import com.zhazi.editor.ui.ParaChips
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -230,6 +230,21 @@ class EditorState {
         }
     }
 
+    /** 横向拖选：选中 start..end 之间所有可编辑词块（连续区间，跳过受保护块） */
+    fun dragSelect(doc: DocxDocument, paraIdx: Int, startIdx: Int, endIdx: Int) {
+        val para = doc.paragraphs.getOrNull(paraIdx) ?: return
+        val chips = chipsOf(doc, paraIdx)
+        val lo = minOf(startIdx, endIdx)
+        val hi = maxOf(startIdx, endIdx)
+        selPara = paraIdx
+        selChips = (lo..hi)
+            .filter { ci ->
+                ci in chips.indices &&
+                    para.runs[para.runIndexAt(chips[ci].first)].editable
+            }
+            .toSet()
+    }
+
     /** 双击词块：拆成单字块 */
     fun splitChip(doc: DocxDocument, paraIdx: Int, chipIdx: Int) {
         val chips = chipsOf(doc, paraIdx)
@@ -383,7 +398,7 @@ fun ZhaZiApp(state: EditorState) {
             },
             bottomBar = {
                 if (doc != null && state.selChips.isNotEmpty()) {
-                    FormatBar(
+                    FormatSheet(
                         selCount = state.selChips.size,
                         fmt = state.firstSelFmt(doc),
                         brushActive = state.brushActive,
@@ -407,7 +422,7 @@ fun ZhaZiApp(state: EditorState) {
                 ) {
                     item {
                         Text(
-                            "点选词块 → 底部改格式 · 双击拆成单字 · 长按与右块合并",
+                            "点选/横拖选词块 → 底部菜单改格式 · 双击拆成单字 · 长按与右块合并",
                             color = Color(0xFF777777),
                             fontSize = 12.sp,
                             modifier = Modifier.padding(bottom = 2.dp),
@@ -470,6 +485,7 @@ private fun ParaCard(state: EditorState, doc: DocxDocument, pi: Int) {
                     },
                     onSplit = { state.splitChip(doc, pi, it) },
                     onMerge = { state.mergeChip(doc, pi, it) },
+                    onDragSelect = { s, e -> state.dragSelect(doc, pi, s, e) },
                 )
             }
         }

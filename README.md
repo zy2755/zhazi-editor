@@ -1,7 +1,7 @@
 # ZhaZi Editor · 炸字编辑
 
 [![Release](https://img.shields.io/github/v/release/zy2755/zhazi-editor)](https://github.com/zy2755/zhazi-editor/releases/latest)
-[![Tests](https://img.shields.io/badge/unit%20tests-17%2F17-brightgreen)](app/src/test/java/com/zhazi/editor/EngineTest.kt)
+[![Tests](https://img.shields.io/badge/unit%20tests-18%2F18-brightgreen)](app/src/test/java/com/zhazi/editor/EngineTest.kt)
 [![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue)](#license)
 [![Install with Obtainium](https://img.shields.io/badge/Obtainium-Install-4CAF50)](https://github.com/ImranR98/Obtainium)
 
@@ -9,9 +9,9 @@
 
 **中文**：把 Word 文档"炸"成一个个词块：点选词块即可快速修改字体、字号、颜色，告别手机上难用的长按拖拽选字。保存时只重写改动过的 run，书签、表格、图片等其余内容字节级原样保留，不重写、不毁文档。
 
-| 词块流（原格式可见） | 点选词块 + 工具栏 | 应用红色后 | 格式刷连刷 | 长按合并块 |
-| --- | --- | --- | --- | --- |
-| ![](docs/screenshot-chips.png) | ![](docs/screenshot-select.png) | ![](docs/screenshot-applied.png) | ![](docs/screenshot-brush.png) | ![](docs/screenshot-merge.png) |
+| 词块流（原格式可见） | 点选词块 + 工具栏 | 应用红色后 | 格式刷连刷 | 长按合并块 | Word 式菜单 + 拖选 | 字体颜色色板 |
+| --- | --- | --- | --- | --- | --- | --- |
+| ![](docs/screenshot-chips.png) | ![](docs/screenshot-select.png) | ![](docs/screenshot-applied.png) | ![](docs/screenshot-brush.png) | ![](docs/screenshot-merge.png) | ![](docs/screenshot-sheet-drag.png) | ![](docs/screenshot-palette.png) |
 
 以上为模拟器实拍：注意红色"保留"、加粗"潦草"、灰色受保护的"粗重"（含 tab 的 run 不可编辑）；
 格式刷截图里"涂鸦"已被刷成源词块"保留"的红字+小字号。
@@ -27,10 +27,11 @@
 
 - 打开 / 另存 .docx（系统文件选择器，默认只筛 docx，无需存储权限）；顶部"关闭"可回到首页
 - 中文分词炸字（ICU 词典分词；双击词块可拆成单字；设备词典缺失时长汉字块自动降级为单字块）
-- 点选多块（跨 run 选择自动拆分 run），批量应用：
-  - 加粗 / 斜体
+- **点选或横向拖选**连续多块（跨 run 选择自动拆分 run），Word 式底部菜单批量应用：
+  - 加粗 / 斜体 / 下划线 / 删除线
   - 字号 ±步进（显示当前值，如 10.5pt；"继承"表示未显式设置）
-  - 9 色调色板 + 恢复原色
+  - 字体颜色：Word 式主题色 10×6 网格 + 恢复原色
+  - 突出显示：OOXML 15 命名色板 + 无高亮
   - 常用中英文字体 + 恢复原字体
   - 清除全部显式字符格式
 - **格式刷**：选中源词块 → 点"格式刷" → 连续点目标词块应用同款格式（源没有的属性，目标也重置回继承）；再点格式刷退出

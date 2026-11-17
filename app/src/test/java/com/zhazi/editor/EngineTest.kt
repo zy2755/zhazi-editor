@@ -268,6 +268,37 @@ class EngineTest {
         assertEquals("FF0000", RprOps.readFmt(RprOps.parseChildren(run.rprXml)).colorHex)
     }
 
+    @Test
+    fun `格式化 - 高亮下划线删除线`() {
+        val doc = DocxParser.parse(originalXml)
+        val newXml = DocxEditor.applyFormat(
+            doc, 1, 2, 4,
+            FontPatch(highlightName = "yellow", underline = true, strike = true)
+        )
+        val doc1 = DocxParser.parse(newXml)
+        assertEquals(doc.paragraphs[1].text, doc1.paragraphs[1].text)
+        val fmt = RprOps.readFmt(
+            RprOps.parseChildren(doc1.paragraphs[1].runs.first { it.text == "潦草" }.rprXml)
+        )
+        assertEquals("yellow", fmt.highlight)
+        assertEquals(true, fmt.underline)
+        assertEquals(true, fmt.strike)
+
+        // 重置回继承
+        val newXml2 = DocxEditor.applyFormat(
+            doc1, 1, 2, 4,
+            FontPatch(underlineReset = true, strikeReset = true, highlightReset = true)
+        )
+        val fmt2 = RprOps.readFmt(
+            RprOps.parseChildren(
+                DocxParser.parse(newXml2).paragraphs[1].runs.first { it.text == "潦草" }.rprXml
+            )
+        )
+        assertNull(fmt2.underline)
+        assertNull(fmt2.strike)
+        assertNull(fmt2.highlight)
+    }
+
     // ---- zip 回写 ----
 
     @Test

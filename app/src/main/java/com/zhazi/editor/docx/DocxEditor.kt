@@ -12,12 +12,20 @@ data class FontPatch(
     val boldReset: Boolean = false,
     val italic: Boolean? = null,
     val italicReset: Boolean = false,
+    val underline: Boolean? = null,
+    val underlineReset: Boolean = false,
+    val strike: Boolean? = null,
+    val strikeReset: Boolean = false,
+    val highlightName: String? = null, // ST_HighlightColor 名（"none" = 显式无）
+    val highlightReset: Boolean = false,
     val clearAll: Boolean = false, // 清除全部显式字符格式
 ) {
     val isEmpty: Boolean
         get() = fontSizeHp == null && !sizeReset && colorHex == null && !colorReset &&
             font == null && !fontReset && bold == null && !boldReset &&
-            italic == null && !italicReset && !clearAll
+            italic == null && !italicReset && underline == null && !underlineReset &&
+            strike == null && !strikeReset && highlightName == null && !highlightReset &&
+            !clearAll
 }
 
 /**
@@ -64,6 +72,12 @@ object DocxEditor {
                 patch.bold?.let { RprOps.patchFlag(children, it, "w:b", "w:bCs") }
                 if (patch.italicReset) RprOps.remove(children, "w:i", "w:iCs")
                 patch.italic?.let { RprOps.patchFlag(children, it, "w:i", "w:iCs") }
+                if (patch.underlineReset) RprOps.remove(children, "w:u")
+                patch.underline?.let { RprOps.patchUnderline(children, it) }
+                if (patch.strikeReset) RprOps.remove(children, "w:strike")
+                patch.strike?.let { RprOps.patchStrike(children, it) }
+                if (patch.highlightReset) RprOps.remove(children, "w:highlight")
+                patch.highlightName?.let { RprOps.patchHighlight(children, it) }
             }
             val newRpr = RprOps.serialize(children)
 

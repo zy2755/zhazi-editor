@@ -13,6 +13,9 @@ class RunFmt(
     val font: String?,    // 中文字体名，null = 继承
     val bold: Boolean?,   // null = 继承
     val italic: Boolean?,
+    val underline: Boolean?,
+    val strike: Boolean?,
+    val highlight: String?, // w:highlight 的颜色名，null = 继承（未设置）
 )
 
 object RprOps {
@@ -115,6 +118,7 @@ object RprOps {
     fun readFmt(children: List<PrChild>): RunFmt {
         var sz: Int? = null; var color: String? = null
         var font: String? = null; var b: Boolean? = null; var i: Boolean? = null
+        var u: Boolean? = null; var s: Boolean? = null; var hl: String? = null
         for (c in children) {
             when (c.qname) {
                 "w:sz" -> sz = attrVal(c.raw, "w:val")?.toIntOrNull()
@@ -122,9 +126,12 @@ object RprOps {
                 "w:rFonts" -> font = attrVal(c.raw, "w:eastAsia") ?: attrVal(c.raw, "w:ascii")
                 "w:b" -> b = flagVal(c.raw)
                 "w:i" -> i = flagVal(c.raw)
+                "w:u" -> u = attrVal(c.raw, "w:val")?.let { it != "none" } ?: true
+                "w:strike" -> s = flagVal(c.raw)
+                "w:highlight" -> hl = attrVal(c.raw, "w:val")
             }
         }
-        return RunFmt(sz, color, font, b, i)
+        return RunFmt(sz, color, font, b, i, u, s, hl)
     }
 
     private fun flagVal(rawTag: String): Boolean =
@@ -164,5 +171,21 @@ object RprOps {
         val rawCs = if (on) "<$qCs/>" else buildTag(qCs, mapOf("w:val" to "0"))
         upsert(children, q, raw)
         upsert(children, qCs, rawCs)
+    }
+
+    /** 下划线：single / none */
+    fun patchUnderline(children: MutableList<PrChild>, on: Boolean) {
+        upsert(children, "w:u", buildTag("w:u", mapOf("w:val" to if (on) "single" else "none")))
+    }
+
+    /** 删除线：有 / 无 */
+    fun patchStrike(children: MutableList<PrChild>, on: Boolean) {
+        val raw = if (on) "<w:strike/>" else buildTag("w:strike", mapOf("w:val" to "0"))
+        upsert(children, "w:strike", raw)
+    }
+
+    /** 突出显示：ST_HighlightColor 名称（"none" = 显式无高亮） */
+    fun patchHighlight(children: MutableList<PrChild>, name: String) {
+        upsert(children, "w:highlight", buildTag("w:highlight", mapOf("w:val" to name)))
     }
 }
