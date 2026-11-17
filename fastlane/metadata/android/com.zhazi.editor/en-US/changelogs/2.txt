@@ -1,0 +1,2 @@
+新增 Word 风格底部格式菜单（字体颜色/突出显示色板）、下划线与删除线、横向拖选连续多块；修复主题字体场景下显式设置字体不生效。
+Word-style format sheet with color palettes, underline & strikethrough, drag multi-select; fixed font setting under theme-attribute runs.
