@@ -299,6 +299,21 @@ class EngineTest {
         assertNull(fmt2.highlight)
     }
 
+    @Test
+    fun `格式化 - 设置字体时移除主题字体属性`() {
+        // Word 新建文档的 run 常用 asciiTheme（主题字体）；theme 属性优先于显式值，
+        // 残留会导致显式设置字体不生效
+        val children = RprOps.parseChildren(
+            "<w:rPr><w:rFonts w:asciiTheme=\"minorHAnsi\" w:eastAsiaTheme=\"minorEastAsia\" w:hint=\"eastAsia\"/></w:rPr>"
+        )
+        RprOps.patchFont(children, "SimSun")
+        val rfonts = children.first { it.qname == "w:rFonts" }.raw
+        assertFalse("theme 属性残留: $rfonts", rfonts.contains("Theme"))
+        assertTrue(rfonts.contains("w:ascii=\"SimSun\""))
+        assertTrue(rfonts.contains("w:eastAsia=\"SimSun\""))
+        assertTrue("hint 应保留", rfonts.contains("w:hint=\"eastAsia\""))
+    }
+
     // ---- zip 回写 ----
 
     @Test

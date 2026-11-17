@@ -148,14 +148,18 @@ object RprOps {
         upsert(children, "w:color", buildTag("w:color", mapOf("w:val" to hex)))
     }
 
-    /** 设置字体：ascii/hAnsi/eastAsia 一起改；已有的 cs/hint 等属性保留 */
+    /** 设置字体：ascii/hAnsi/eastAsia 一起改；已有的 cs/hint 等属性保留。
+     *  必须移除 *Theme 属性——OOXML 中 theme 属性优先于显式值，残留会让设置不生效 */
     fun patchFont(children: MutableList<PrChild>, font: String) {
         val existing = children.firstOrNull { it.qname == "w:rFonts" }
         val attrs = LinkedHashMap<String, String>()
         if (existing != null) {
             for (m in ATTR.findAll(existing.raw)) {
                 val k = m.groupValues[1]
-                if (k != "w:ascii" && k != "w:hAnsi" && k != "w:eastAsia") {
+                if (k != "w:ascii" && k != "w:hAnsi" && k != "w:eastAsia" &&
+                    k != "w:asciiTheme" && k != "w:hAnsiTheme" &&
+                    k != "w:eastAsiaTheme" && k != "w:cstheme"
+                ) {
                     attrs[k] = XmlScanner.decodeEntities(m.groupValues[2])
                 }
             }
