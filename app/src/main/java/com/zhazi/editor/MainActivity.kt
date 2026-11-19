@@ -440,22 +440,35 @@ fun ZhaZiApp(state: EditorState) {
 @Composable
 private fun TopBar(state: EditorState, onOpen: () -> Unit, onSave: () -> Unit, onUndo: () -> Unit, onClose: () -> Unit) {
     Surface(color = Color(0xFF1B1B1B), modifier = Modifier.fillMaxWidth()) {
-        Row(
-            Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
+            // 行 1：文档标题（完整显示，最多两行）
             Text(
                 state.fileName.ifBlank { "炸字编辑" },
                 color = Color.White,
                 fontSize = 16.sp,
-                maxLines = 1,
+                lineHeight = 20.sp,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.padding(start = 4.dp, top = 2.dp),
             )
-            TextButton(onClick = onUndo, enabled = state.undoStack.isNotEmpty()) { Text("撤销") }
-            TextButton(onClick = onClose, enabled = state.xml != null) { Text("关闭") }
-            TextButton(onClick = onOpen) { Text("打开") }
-            Button(onClick = onSave) { Text("保存") }
+            // 行 2：操作按钮（未打开文档时隐藏撤销/关闭）
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (state.xml != null) {
+                    TextButton(onClick = onUndo, enabled = state.undoStack.isNotEmpty()) { Text("撤销") }
+                    TextButton(onClick = onClose) { Text("关闭") }
+                }
+                TextButton(onClick = onOpen) { Text("打开") }
+                Button(onClick = onSave, enabled = state.xml != null) { Text("保存") }
+            }
         }
     }
 }
