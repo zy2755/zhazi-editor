@@ -1,10 +1,11 @@
 package com.zhazi.editor.ui
 
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -15,15 +16,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -82,11 +87,31 @@ fun ParaChips(
     fun isEditable(ci: Int): Boolean =
         chips.getOrNull(ci)?.let { para.runs[para.runIndexAt(it.first)].editable } ?: false
 
+    // 横向拖选：用官方 draggable 做轴判别——竖向滑动让位给列表滚动，横向确认后才启动
+    var dragBaseIdx by remember(chips) { mutableIntStateOf(-1) }
+    var dragLastPos by remember(chips) { mutableStateOf(Offset.Zero) }
+    // draggable 的 onDragStarted 给的是窗口坐标；onGloballyPositioned 记录 FlowRow
+    // 在窗口中的偏移，用于把窗口坐标换算回 FlowRow 本地坐标
+    var containerWinOffset by remember { mutableStateOf(Offset.Zero) }
+    fun hitChip(p: Offset): Int {
+        var found = -1
+        for (i in chipRects.indices) {
+            val r = chipRects[i] ?: continue
+            if (r.contains(p)) found = i
+        }
+        return found
+    }
+
     FlowRow(
         modifier = modifier.pointerInput(para.text, chips, para) {
             awaitEachGesture {
-                val down = awaitFirstDown(requireUnconsumed = false)
+                // 不依赖 awaitFirstDown 的时序（down 可能已被词块的 clickable 消费），
+                // 从收到的第一帧开始跟踪；Initial pass 确保父级先于子级看到事件。
+                // 横向占优 → 进入滑选并消费事件（列表不滚、词块 click 取消）；
+                // 纵向占优 → 一票否决本段手势，事件照常由列表滚动处理。
+                var downPos: Offset? = null
                 var selecting = false
+                var vetoed = false
                 var startIdx = -1
                 fun hitChip(p: Offset): Int {
                     var found = -1
@@ -97,25 +122,29 @@ fun ParaChips(
                     return found
                 }
                 while (true) {
-                    val event = awaitPointerEvent()
+                    val event = awaitPointerEvent(PointerEventPass.Initial)
                     val change = event.changes.firstOrNull() ?: break
                     if (!change.pressed) break
-                    if (!selecting) {
-                        val dx = change.position.x - down.position.x
-                        val dy = change.position.y - down.position.y
-                        // 横向位移明显大于纵向才进入滑选，竖向让位给列表滚动
-                        if (abs(dx) > viewConfiguration.touchSlop * 2f && abs(dx) > abs(dy)) {
-                            val sIdx = hitChip(down.position)
+                    val pos = change.position
+                    if (downPos == null) downPos = pos
+                    val base = downPos!!
+                    if (!selecting && !vetoed) {
+                        val dx = pos.x - base.x
+                        val dy = pos.y - base.y
+                        if (abs(dy) > viewConfiguration.touchSlop && abs(dy) >= abs(dx)) {
+                            vetoed = true // 纵向滚动，本段手势不再参与滑选
+                        } else if (abs(dx) > viewConfiguration.touchSlop * 3f && abs(dx) > abs(dy) * 2f) {
+                            val sIdx = hitChip(base)
                             if (sIdx >= 0 && isEditable(sIdx)) {
                                 selecting = true
                                 startIdx = sIdx
                                 onDragSelect(startIdx, startIdx)
                             } else {
-                                break
+                                vetoed = true // 起点不在可编辑词块上
                             }
                         }
-                    } else {
-                        val idx = hitChip(change.position)
+                    } else if (selecting) {
+                        val idx = hitChip(pos)
                         if (idx >= 0) onDragSelect(startIdx, idx)
                         change.consume()
                     }
