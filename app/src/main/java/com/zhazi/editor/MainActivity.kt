@@ -456,18 +456,18 @@ private fun TopBar(state: EditorState, onOpen: () -> Unit, onSave: () -> Unit, o
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(start = 4.dp, top = 2.dp),
             )
-            // 行 2：操作按钮（未打开文档时隐藏撤销/关闭）
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                if (state.xml != null) {
+            // 行 2：操作按钮（仅打开文档后显示；首页入口在欢迎页大按钮）
+            if (state.xml != null) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     TextButton(onClick = onUndo, enabled = state.undoStack.isNotEmpty()) { Text("撤销") }
                     TextButton(onClick = onClose) { Text("关闭") }
+                    TextButton(onClick = onOpen) { Text("打开") }
+                    Button(onClick = onSave) { Text("保存") }
                 }
-                TextButton(onClick = onOpen) { Text("打开") }
-                Button(onClick = onSave, enabled = state.xml != null) { Text("保存") }
             }
         }
     }
