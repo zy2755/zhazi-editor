@@ -1,0 +1,2 @@
+顶栏改两行布局：文档标题完整显示，操作按钮移至标题下方；未打开文档时隐藏操作按钮。修复横向拖选手势过灵敏的问题（斜向上滑动不再误触发选中）。
+Two-row top bar: full doc title, actions moved below; action buttons hidden on home screen. Drag-select gesture no longer misfires on mostly-vertical swipes.
